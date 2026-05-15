@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Hospital.Data;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -6,10 +7,10 @@ using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using System.Net.Http;
 
 
 
@@ -48,14 +49,14 @@ namespace FINAL1
         }
         // مصفوفة عامة لتخزين وإدارة كافة عمليات بايثون المشغلة
         private List<Process> pythonServerProcesses = new List<Process>();
-        
-            
+
+
 
 
 
         private void intelgentForm_Load(object sender, EventArgs e)
         {
-            // قائمة بأسماء كافة ملفات الفحوصات الطبية المخصصة للمشفى
+            // 🌟 تم إزالة bone_analyzer.py من هنا لأنه ليس خادم مستمر، بل أداة تُستدعى عند ضغط الزر فقط
             string[] medicalScripts = { "Creatinine.py", "sugar.py", "LiverFunctions.py", "LipidPanel.py" };
 
             string pythonPath = @"C:\Users\as\AppData\Local\Programs\Python\Python312\python.exe";
@@ -63,7 +64,6 @@ namespace FINAL1
             foreach (string scriptName in medicalScripts)
             {
                 string scriptPath = Path.Combine(Application.StartupPath, scriptName);
-
                 if (File.Exists(scriptPath))
                 {
                     try
@@ -72,14 +72,13 @@ namespace FINAL1
                         startInfo.FileName = pythonPath;
                         startInfo.Arguments = $"\"{scriptPath}\"";
                         startInfo.UseShellExecute = false;
-                        startInfo.CreateNoWindow = true; // إخفاء الشاشة السوداء تماماً عن الطبيب
+                        startInfo.CreateNoWindow = true;
                         startInfo.WorkingDirectory = Application.StartupPath;
 
                         Process process = new Process();
                         process.StartInfo = startInfo;
                         process.Start();
 
-                        // إضافة العملية إلى القائمة لمراقبتها وإغلاقها لاحقاً
                         pythonServerProcesses.Add(process);
                     }
                     catch (Exception ex)
@@ -88,7 +87,36 @@ namespace FINAL1
                     }
                 }
             }
+            try
+            {
+                using (var db = new HospitalDBEntities())
+                {
+                    // 1. جلب قائمة المرضى وتعبئة الـ ComboBox الخاص بهم (اسمه cmbPatients)
+                    var patientsList = db.Patients
+                                         .Select(p => new { p.PatientID, p.FullName })
+                                         .ToList();
+
+                    cmbPatients.DataSource = patientsList;
+                    cmbPatients.DisplayMember = "FullName";   // الاسم الذي يراه الطبيب على الشاشة
+                    cmbPatients.ValueMember = "PatientID";    // الرقم الحقيقي المخفي الذي نستخدمه في الكود
+
+                    // 2. جلب قائمة الأطباء وتعبئة الـ ComboBox الخاص بهم (اسمه cmbDoctors)
+                    var doctorsList = db.Employees
+                                        .Select(e => new { e.EmployeeID, FullName = e.FirstName + " " + e.LastName })
+                                        .ToList();
+
+                    cmbDoctors.DataSource = doctorsList;
+                    cmbDoctors.DisplayMember = "FullName";    // اسم الطبيب الظاهر
+                    cmbDoctors.ValueMember = "EmployeeID";    // رقم الموظف المخفي لربط العلاقات
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"فشل تحميل قوائم الأطباء والمرضى: {ex.Message}", "خطأ في النظام");
+            }
         }
+        
+
 
         private void intelligentForm_FormClosing(object sender, FormClosingEventArgs e)
         {
@@ -318,8 +346,188 @@ namespace FINAL1
             catch (Exception ex) { MessageBox.Show(ex.Message); }
         }
 
+
+
+        private void btnCheckFracture_Click(object sender, EventArgs e)
+        {
+            // 1. التحقق من اختيار طبيب ومريض من القوائم المنسدلة
+            if (cmbPatients.SelectedValue == null || cmbDoctors.SelectedValue == null)
+            {
+                MessageBox.Show("يرجى اختيار المريض والطبيب من القوائم المنسدلة أولاً قبل الفحص.", "نقص بيانات", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            OpenFileDialog openFileDialog = new OpenFileDialog();
+            openFileDialog.Filter = "Image Files|*.jpg;*.jpeg;*.png;*.bmp";
+
+            if (openFileDialog.ShowDialog() == DialogResult.OK)
+            {
+                string selectedImagePath = openFileDialog.FileName;
+                string pythonScriptPath = Path.Combine(Application.StartupPath, "bone_analyzer.py");
+
+                ProcessStartInfo start = new ProcessStartInfo();
+                start.FileName = @"C:\Users\as\AppData\Local\Programs\Python\Python312\python.exe";
+                start.Arguments = $"-u \"{pythonScriptPath}\" \"{selectedImagePath}\"";
+                start.UseShellExecute = false;
+                start.CreateNoWindow = true;
+                start.RedirectStandardOutput = true;
+                start.RedirectStandardError = true;
+                start.StandardOutputEncoding = Encoding.UTF8;
+
+                try
+                {
+                    string rawResult = "";
+                    string errorResult = "";
+
+                    using (Process process = Process.Start(start))
+                    {
+                        rawResult = process.StandardOutput.ReadToEnd().Trim();
+                        errorResult = process.StandardError.ReadToEnd().Trim();
+                        process.WaitForExit();
+                    }
+
+                    if (!string.IsNullOrEmpty(errorResult))
+                    {
+                        MessageBox.Show($"خطأ في محرك بايثون:\n{errorResult}", "فشل التحليل", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        return;
+                    }
+
+                    // تفسير النتيجة القادمة من بايثون
+                    string finalMessage = "";
+                    switch (rawResult)
+                    {
+                        case "Fracture_Detected":
+                            finalMessage = "🚨 التشخيص: تم رصد انقطاع حاد وتفتت في الحواف. مؤشر قوي على وجود كسر حديث.";
+                            break;
+                        case "Bone_Healing":
+                            finalMessage = "🟡 مرحلة الشفاء: تظهر حواف كثيفة وبناء نسيجي. العظم في مرحلة الالتئام النشط.";
+                            break;
+                        case "Normal_Bone":
+                            finalMessage = "✅ النتيجة: استمرارية العظم ممتازة والكثافة عالية. العظم سليم أو تم الشفاء بنجاح.";
+                            break;
+                        case "Low_Density":
+                            finalMessage = "📉 تنبيه: لا توجد كسور واضحة، ولكن كثافة العظام منخفضة نسبياً.";
+                            break;
+                        default:
+                            finalMessage = $"⚠️ استجابة غير معرفة: {rawResult}";
+                            break;
+                    }
+
+                    // 🌟 الحفظ التلقائي المباشر باستخدام الـ ID المأخوذ من الـ ComboBox 🌟
+                    using (var db = new HospitalDBEntities())
+                    {
+                        MedicalRecords newRecord = new MedicalRecords();
+
+                        // سحب الأرقام مباشرة من الـ SelectedValue للقوائم المنسدلة
+                        newRecord.PatientID = Convert.ToInt32(cmbPatients.SelectedValue);
+                        newRecord.DoctorID = Convert.ToInt32(cmbDoctors.SelectedValue);
+
+                        newRecord.VisitDate = DateTime.Now;
+                        newRecord.Diagnosis = "فحص أشعة العظام الذكي: " + finalMessage;
+                        newRecord.Prescription = "متابعة طبية سريرية مطابقة للتقرير الشامل.";
+
+                        db.MedicalRecords.Add(newRecord);
+                        db.SaveChanges();
+                    }
+
+                    MessageBox.Show(finalMessage + "\n\n💾 تم حفظ وتوثيق التقرير بنجاح لملف المريض المحدد.", "نجاح العملية", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"فشل بدء عملية الفحص التقني: {ex.Message}", "خطأ نظام", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            }
+        }
+
+        private void btnCheckBrainTumor_Click(object sender, EventArgs e)
+        {
+            // 1. التحقق من اختيار طبيب ومريض من القوائم المنسدلة
+            if (cmbPatients.SelectedValue == null || cmbDoctors.SelectedValue == null)
+            {
+                MessageBox.Show("يرجى اختيار المريض والطبيب من القوائم المنسدلة أولاً قبل فحص الرنين.", "نقص بيانات", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            OpenFileDialog openFileDialog = new OpenFileDialog();
+            openFileDialog.Filter = "MRI Images|*.jpg;*.jpeg;*.png;*.bmp";
+
+            if (openFileDialog.ShowDialog() == DialogResult.OK)
+            {
+                string selectedImagePath = openFileDialog.FileName;
+                string pythonScriptPath = Path.Combine(Application.StartupPath, "tumor_segmentation.py");
+
+                ProcessStartInfo start = new ProcessStartInfo();
+                start.FileName = @"C:\Users\as\AppData\Local\Programs\Python\Python312\python.exe";
+                start.Arguments = $"-u \"{pythonScriptPath}\" \"{selectedImagePath}\"";
+                start.UseShellExecute = false;
+                start.CreateNoWindow = true;
+                start.RedirectStandardOutput = true;
+                start.RedirectStandardError = true;
+                start.StandardOutputEncoding = Encoding.UTF8;
+
+                try
+                {
+                    string rawResult = "";
+                    string errorResult = "";
+
+                    using (Process process = Process.Start(start))
+                    {
+                        rawResult = process.StandardOutput.ReadToEnd().Trim();
+                        errorResult = process.StandardError.ReadToEnd().Trim();
+                        process.WaitForExit();
+                    }
+
+                    if (!string.IsNullOrEmpty(errorResult))
+                    {
+                        MessageBox.Show($"خطأ محرك الأشعة:\n{errorResult}", "فشل الفحص", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        return;
+                    }
+
+                    string finalMessage = "";
+                    if (rawResult.StartsWith("Tumor_Detected"))
+                    {
+                        string[] pixelSize = rawResult.Split(':');
+                        finalMessage = $"🚨 خطير: تم رصد كتلة نسيجية غير طبيعية (ورم محتمل) داخل تجويف الدماغ.\n📦 الحجم السطحي للكتلة: {pixelSize[1]} بكسل.";
+                    }
+                    else if (rawResult == "Clear_Brain")
+                    {
+                        finalMessage = "✅ النتيجة: صورة الرنين المغناطيسي سليمة تماماً، وتظهر توزيعاً طبيعياً ولا توجد مؤشرات لأورام.";
+                    }
+                    else
+                    {
+                        finalMessage = $"⚠️ تنبيه: رد غير متوقع من المحرك: {rawResult}";
+                    }
+
+                    // 🌟 الحفظ التلقائي في السجلات الطبية باستخدام الـ ID المأخوذ من الـ ComboBox 🌟
+                    using (var db = new HospitalDBEntities())
+                    {
+                        MedicalRecords newRecord = new MedicalRecords();
+
+                        // سحب المعرفات مباشرة دون وسطاء نصيين
+                        newRecord.PatientID = Convert.ToInt32(cmbPatients.SelectedValue);
+                        newRecord.DoctorID = Convert.ToInt32(cmbDoctors.SelectedValue);
+
+                        newRecord.VisitDate = DateTime.Now;
+                        newRecord.Diagnosis = "تحليل الرنين المغناطيسي: " + finalMessage;
+                        newRecord.Prescription = rawResult.StartsWith("Tumor_Detected") ? "تحويل فوري لقسم جراحة الأعصاب لعقد لجنة طبية." : "لا يوجد.";
+
+                        db.MedicalRecords.Add(newRecord);
+                        db.SaveChanges();
+                    }
+
+                    MessageBox.Show(finalMessage + "\n\n💾 تم أرشفة تقرير الرنين المغناطيسي بنجاح.", "نجاح الأرشفة", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"فشل بدء المعالجة النسيجية: {ex.Message}", "خطأ نظام", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            }
+        }
+
+
     }
 }
+
 
 
    

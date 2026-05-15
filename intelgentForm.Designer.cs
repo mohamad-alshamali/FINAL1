@@ -50,12 +50,16 @@
             this.label8 = new System.Windows.Forms.Label();
             this.label9 = new System.Windows.Forms.Label();
             this.label10 = new System.Windows.Forms.Label();
+            this.btnCheckFracture = new System.Windows.Forms.Button();
+            this.btnCheckBrainTumor = new System.Windows.Forms.Button();
+            this.cmbPatients = new System.Windows.Forms.ComboBox();
+            this.cmbDoctors = new System.Windows.Forms.ComboBox();
             this.panel1.SuspendLayout();
             this.SuspendLayout();
             // 
             // btnDiagnose
             // 
-            this.btnDiagnose.Location = new System.Drawing.Point(653, 134);
+            this.btnDiagnose.Location = new System.Drawing.Point(653, 101);
             this.btnDiagnose.Name = "btnDiagnose";
             this.btnDiagnose.Size = new System.Drawing.Size(100, 23);
             this.btnDiagnose.TabIndex = 0;
@@ -65,7 +69,7 @@
             // 
             // txtHemoglobin
             // 
-            this.txtHemoglobin.Location = new System.Drawing.Point(653, 88);
+            this.txtHemoglobin.Location = new System.Drawing.Point(653, 75);
             this.txtHemoglobin.Name = "txtHemoglobin";
             this.txtHemoglobin.Size = new System.Drawing.Size(100, 20);
             this.txtHemoglobin.TabIndex = 2;
@@ -90,7 +94,7 @@
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(650, 72);
+            this.label2.Location = new System.Drawing.Point(650, 56);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(90, 13);
             this.label2.TabIndex = 5;
@@ -136,14 +140,14 @@
             // 
             // txtCreatinine
             // 
-            this.txtCreatinine.Location = new System.Drawing.Point(665, 313);
+            this.txtCreatinine.Location = new System.Drawing.Point(653, 143);
             this.txtCreatinine.Name = "txtCreatinine";
             this.txtCreatinine.Size = new System.Drawing.Size(100, 20);
             this.txtCreatinine.TabIndex = 9;
             // 
             // btnCheckKidney
             // 
-            this.btnCheckKidney.Location = new System.Drawing.Point(665, 344);
+            this.btnCheckKidney.Location = new System.Drawing.Point(650, 174);
             this.btnCheckKidney.Name = "btnCheckKidney";
             this.btnCheckKidney.Size = new System.Drawing.Size(100, 23);
             this.btnCheckKidney.TabIndex = 10;
@@ -163,7 +167,7 @@
             // 
             // btnLipid
             // 
-            this.btnLipid.Location = new System.Drawing.Point(442, 344);
+            this.btnLipid.Location = new System.Drawing.Point(437, 264);
             this.btnLipid.Name = "btnLipid";
             this.btnLipid.Size = new System.Drawing.Size(130, 23);
             this.btnLipid.TabIndex = 15;
@@ -206,14 +210,14 @@
             // 
             // txtTrig
             // 
-            this.txtTrig.Location = new System.Drawing.Point(443, 258);
+            this.txtTrig.Location = new System.Drawing.Point(442, 190);
             this.txtTrig.Name = "txtTrig";
             this.txtTrig.Size = new System.Drawing.Size(125, 20);
             this.txtTrig.TabIndex = 20;
             // 
             // txtChol
             // 
-            this.txtChol.Location = new System.Drawing.Point(443, 313);
+            this.txtChol.Location = new System.Drawing.Point(436, 238);
             this.txtChol.Name = "txtChol";
             this.txtChol.Size = new System.Drawing.Size(129, 20);
             this.txtChol.TabIndex = 21;
@@ -221,7 +225,7 @@
             // label8
             // 
             this.label8.AutoSize = true;
-            this.label8.Location = new System.Drawing.Point(508, 297);
+            this.label8.Location = new System.Drawing.Point(503, 222);
             this.label8.Name = "label8";
             this.label8.Size = new System.Drawing.Size(64, 13);
             this.label8.TabIndex = 22;
@@ -230,7 +234,7 @@
             // label9
             // 
             this.label9.AutoSize = true;
-            this.label9.Location = new System.Drawing.Point(483, 242);
+            this.label9.Location = new System.Drawing.Point(495, 174);
             this.label9.Name = "label9";
             this.label9.Size = new System.Drawing.Size(73, 13);
             this.label9.TabIndex = 23;
@@ -239,17 +243,59 @@
             // label10
             // 
             this.label10.AutoSize = true;
-            this.label10.Location = new System.Drawing.Point(709, 300);
+            this.label10.Location = new System.Drawing.Point(694, 127);
             this.label10.Name = "label10";
             this.label10.Size = new System.Drawing.Size(46, 13);
             this.label10.TabIndex = 24;
             this.label10.Text = "كرياتينين";
+            // 
+            // btnCheckFracture
+            // 
+            this.btnCheckFracture.Location = new System.Drawing.Point(555, 322);
+            this.btnCheckFracture.Name = "btnCheckFracture";
+            this.btnCheckFracture.Size = new System.Drawing.Size(213, 23);
+            this.btnCheckFracture.TabIndex = 25;
+            this.btnCheckFracture.Text = "تحليل الصور الشعاعية";
+            this.btnCheckFracture.UseVisualStyleBackColor = true;
+            this.btnCheckFracture.Click += new System.EventHandler(this.btnCheckFracture_Click);
+            // 
+            // btnCheckBrainTumor
+            // 
+            this.btnCheckBrainTumor.Location = new System.Drawing.Point(556, 372);
+            this.btnCheckBrainTumor.Name = "btnCheckBrainTumor";
+            this.btnCheckBrainTumor.Size = new System.Drawing.Size(212, 23);
+            this.btnCheckBrainTumor.TabIndex = 26;
+            this.btnCheckBrainTumor.Text = "تحليل صور الرنين المغناطيسي";
+            this.btnCheckBrainTumor.UseVisualStyleBackColor = true;
+            this.btnCheckBrainTumor.Click += new System.EventHandler(this.btnCheckBrainTumor_Click);
+            // 
+            // cmbPatients
+            // 
+            this.cmbPatients.FormattingEnabled = true;
+            this.cmbPatients.Location = new System.Drawing.Point(617, 281);
+            this.cmbPatients.Name = "cmbPatients";
+            this.cmbPatients.Size = new System.Drawing.Size(151, 21);
+            this.cmbPatients.TabIndex = 31;
+            this.cmbPatients.Text = "قائمة المرضى المسجلين";
+            // 
+            // cmbDoctors
+            // 
+            this.cmbDoctors.FormattingEnabled = true;
+            this.cmbDoctors.Location = new System.Drawing.Point(617, 237);
+            this.cmbDoctors.Name = "cmbDoctors";
+            this.cmbDoctors.Size = new System.Drawing.Size(151, 21);
+            this.cmbDoctors.TabIndex = 32;
+            this.cmbDoctors.Text = "قائمة الاطباء المسجلين";
             // 
             // intelgentForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(800, 450);
+            this.Controls.Add(this.cmbDoctors);
+            this.Controls.Add(this.cmbPatients);
+            this.Controls.Add(this.btnCheckBrainTumor);
+            this.Controls.Add(this.btnCheckFracture);
             this.Controls.Add(this.label10);
             this.Controls.Add(this.label9);
             this.Controls.Add(this.label8);
@@ -305,5 +351,9 @@
         private System.Windows.Forms.Label label8;
         private System.Windows.Forms.Label label9;
         private System.Windows.Forms.Label label10;
+        private System.Windows.Forms.Button btnCheckFracture;
+        private System.Windows.Forms.Button btnCheckBrainTumor;
+        private System.Windows.Forms.ComboBox cmbPatients;
+        private System.Windows.Forms.ComboBox cmbDoctors;
     }
 }
