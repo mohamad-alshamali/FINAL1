@@ -5,6 +5,8 @@ using System.Linq;
 using System.Windows.Forms;
 using System.Diagnostics;
 using Hospital.Data;
+using System.Configuration;
+using System.Data.SqlClient;
 
 namespace FINAL1
 {
@@ -84,12 +86,18 @@ namespace FINAL1
                 MessageBox.Show("تعذر فتح الرابط");
             }
         }
-
+        bool isLoggedIn = false;
         // زر تسجيل الدخول والخروج
         private void btnLogin_Click_1(object sender, EventArgs e)
         {
-            // تسجيل خروج
-            if (btnLogin.Text == "تسجيل الخروج")
+            if (!isLoggedIn)
+            {
+                progressBar1.Visible = true;
+            }
+
+
+                // تسجيل خروج
+                if (btnLogin.Text == "تسجيل الخروج")
             {
                 foreach (ToolStripMenuItem item in menuStrip1.Items)
                 {
@@ -114,6 +122,7 @@ namespace FINAL1
                 currentUserRole = "";
 
                 MessageBox.Show("تم تسجيل الخروج بنجاح");
+                isLoggedIn = false;
 
                 return;
             }
@@ -137,6 +146,7 @@ namespace FINAL1
         // معالجة تسجيل الدخول
         public void ProcessLogin(string username, string password)
         {
+            
             try
             {
                 var loggedInUser = db.Users
@@ -153,7 +163,8 @@ namespace FINAL1
                         : "";
 
                     MessageBox.Show("تم تسجيل الدخول بنجاح");
-
+                    isLoggedIn = false;
+                    progressBar1.Visible = false;
                     menuStrip1.Visible = true;
 
                     foreach (ToolStripMenuItem item in menuStrip1.Items)
@@ -368,7 +379,6 @@ namespace FINAL1
         {
             new intelgentForm().Show();
         }
-
 
 
     }

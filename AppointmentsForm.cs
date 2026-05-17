@@ -3,7 +3,8 @@ using System.Data;
 using System.Linq;
 using System.Windows.Forms;
 using Hospital.Data; // استدعاء مشروع المكتبة الخاص بك
-
+using System.Configuration;
+using System.Data.SqlClient;
 namespace FINAL1
 {
     public partial class AppointmentsForm : Form

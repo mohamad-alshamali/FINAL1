@@ -3,7 +3,8 @@ using System.Data;
 using System.Linq;
 using System.Windows.Forms;
 using Hospital.Data; // استدعاء مشروع المكتبة
-
+using System.Configuration;
+using System.Data.SqlClient;
 namespace FINAL1
 {
     public partial class ManageUsersForm : Form
@@ -19,6 +20,28 @@ namespace FINAL1
         {
             LoadRolesCombo(); // شحن قائمة الصلاحيات (Admin, Doctor, Staff)
             RefreshUsersGrid(); // جلب وعرض الحسابات الحالية
+            SetTextBoxPlaceholder(txtUserID, "🔍 أدخل رقم المستخدم هنا...");
+            SetTextBoxPlaceholder(txtFingerprintID, "☝️ بصمة (اختياري)...");
+            SetTextBoxPlaceholder(txtEmployeePhone, "📞 هاتف الموظف...");
+            SetTextBoxPlaceholder(txtFirstName, "👤 الاسم الأول...");
+            SetTextBoxPlaceholder(txtLastName, "👥 الكنية...");
+            SetTextBoxPlaceholder(txtUser, "🧑‍💻 اسم المستخدم...");
+            SetTextBoxPlaceholder(txtPass, "🔑 كلمة المرور...");
+            SetTextBoxPlaceholder(txtUserID, "👩‍⚕️ لاسترجاع بيانات الطبيب...");
+            SetTextBoxPlaceholder(textBoxclinic, "🏥 رقم العيادة...");
+            SetTextBoxPlaceholder(textBoxsp, "🩺 التخصص الطبي...");
+            SetTextBoxPlaceholder(textBoxfee, "💵 رسوم المعاينة...");
+           
+
+        }
+        // 📌 كود المساعد لإرسال أمر التلميح لنظام تشغيل ويندوز (ضع هذه الدالة في أسفل الكلاس)
+        [System.Runtime.InteropServices.DllImport("user32.dll", CharSet = System.Runtime.InteropServices.CharSet.Auto)]
+            private static extern Int32 SendMessage(IntPtr hWnd, int msg, int wParam, [System.Runtime.InteropServices.MarshalAs(System.Runtime.InteropServices.UnmanagedType.LPWStr)] string lParam);
+
+private void SetTextBoxPlaceholder(TextBox textBox, string placeholderText)
+        {
+            // 0x1501 هو المعرف الخاص بأمر EM_SETCUEBANNER في نظام ويندوز
+            SendMessage(textBox.Handle, 0x1501, 0, placeholderText);
         }
 
         // 1. شحن القائمة المنسدلة بالأدوار المتاحة من جدول Roles
@@ -131,8 +154,40 @@ namespace FINAL1
                 };
                 db.Employees.Add(newEmployee);
 
+
+
                 // حفظ بيانات الموظف المترابطة في السيرفر
                 db.SaveChanges();
+                // حفظ بيانات الموظف الأساسية أولاً في السيرفر لتوليد الـ EmployeeID تلقائياً
+              
+
+                // التحقق مما إذا كان الموظف الجديد طبيباً لإضافة تفاصيل عيادته
+                if (cmbRoles.Text == "Doctor")
+                {
+                    // التحقق من إدخال رقم عيادة صحيح لمنع انهيار البرنامج عند التحويل الرقمي
+                    int.TryParse(textBoxclinic.Text.Trim(), out int clinicNum);
+
+                    DoctorDetails doctor = new DoctorDetails()
+                    {
+                        // 🌟 التصحيح البرمجي: ربط الطبيب بالـ EmployeeID المولد تلقائياً من السيرفر الآن
+                        DoctorID = newEmployee.EmployeeID,
+
+                        Specialization = textBoxsp.Text.Trim(),
+                        ClinicNumber = textBoxclinic.Text.Trim(), // تمرير الرقم الصحيح بعد التحقق
+                        ConsultationFee = decimal.TryParse(textBoxfee.Text.Trim(), out decimal fee) ? fee : 0
+                    };
+
+                    // 🌟 السطر المفقود 1: إضافة كائن الطبيب إلى جدول تفاصيل الأطباء في الـ Context
+                    db.DoctorDetails.Add(doctor);
+
+                    // 🌟 السطر M المفقود 2: حفظ تفاصيل الطبيب نهائياً داخل قاعدة البيانات
+                    db.SaveChanges();
+                    MessageBox.Show("💾 تم حفظ الموظف وتوليد تفاصيل العيادة الطبية بنجاح في قاعدة البيانات.", "نجاح التسجيل", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                     RefreshUsersGrid(); // تحديث الجدول لعرض الحساب الجديد مع تفاصيل العيادة مباشرةً بعد الإنشاء
+                }
+
+
+
 
                 MessageBox.Show("تم إنشاء حساب المستخدم وتعبئة بياناته الشخصية في جدول Employees بنجاح!");
 
@@ -140,6 +195,8 @@ namespace FINAL1
                 selectedImagePath = "";
                 ClearAllEmployeeInputs();
                 RefreshUsersGrid();
+               
+
             }
             catch (Exception ex)
             {
@@ -178,6 +235,7 @@ namespace FINAL1
                     userToUpdate.RoleID = (int)cmbRoles.SelectedValue; // منح الصلاحية الجديدة (تغيير الدور)
                     userToUpdate.IsActive = chkActive.Checked; // تغيير حالة النشاط
                     userToUpdate.IsActive = chkActive.Checked;
+
                     // إذا كتب الأدمن كلمة مرور جديدة نقوم بتحديثها، وإلا نترك القديمة كما هي
                     if (!string.IsNullOrWhiteSpace(txtPass.Text))
                     {
@@ -197,6 +255,92 @@ namespace FINAL1
             }
             catch (Exception ex) { MessageBox.Show("خطأ أثناء التعديل: " + ex.Message); }
         }
+        private void btnupdateemployee(object sender, EventArgs e)
+        {
+            try
+            {
+                if (dgvUsers.CurrentRow == null) return;
+                int userId = (int)dgvUsers.CurrentRow.Cells["رقم_الحساب"].Value;
+                var employeeToUpdate = db.Employees.FirstOrDefault(emp => emp.UserID == userId);
+                if (employeeToUpdate != null)
+                {
+                    employeeToUpdate.FirstName = txtFirstName.Text.Trim();
+                    employeeToUpdate.LastName = txtLastName.Text.Trim();
+                    employeeToUpdate.Phone = txtEmployeePhone.Text.Trim();
+                    // تحديث رقم البصمة إذا تم إدخاله
+                    if (!string.IsNullOrWhiteSpace(txtFingerprintID.Text))
+                    {
+                        int fId = Convert.ToInt32(txtFingerprintID.Text.Trim());
+                        if (db.Employees.Any(emp => emp.FingerprintID == fId && emp.UserID != userId))
+                        {
+                            MessageBox.Show("رقم البصمة هذا مخصص لموظف آخر مسبقاً، الرجاء إدخال رقم بصمة فريد!");
+                            return;
+                        }
+                        employeeToUpdate.FingerprintID = fId;
+                    }
+                    db.SaveChanges();
+                    MessageBox.Show("تم تحديث بيانات الموظف بنجاح!");
+                    ClearInputs();
+                    RefreshUsersGrid();
+                }
+            }
+            catch (Exception ex) { MessageBox.Show("خطأ أثناء تعديل بيانات الموظف: " + ex.Message); }
+
+
+
+
+        }
+
+        private void btnupdateclinic_Click_1(object sender, EventArgs e)
+        {
+            try
+            {
+                // 1. فحص هل تم اختيار سطر من الجدول
+                if (dgvUsers.CurrentRow == null)
+                {
+                    MessageBox.Show("تنبيه: لم تقم باختيار أي سطر من الجدول! ⚠️");
+                    return;
+                }
+
+                int userId = (int)dgvUsers.CurrentRow.Cells["رقم_الحساب"].Value;
+
+                // 2. فحص وجود الموظف
+                var employee = db.Employees.FirstOrDefault(emp => emp.UserID == userId);
+                if (employee == null)
+                {
+                    MessageBox.Show($"خطأ: لم يتم العثور على موظف مرتبط برقم الحساب: {userId} ❌");
+                    return;
+                }
+                
+                // 3. فحص وجود تفاصيل الطبيب
+                var doctorDetails = db.DoctorDetails.FirstOrDefault(doc => doc.DoctorID == employee.EmployeeID);
+                if (doctorDetails == null)
+                {
+                    doctorDetails = new DoctorDetails();
+                    doctorDetails.DoctorID = employee.EmployeeID;
+
+                    // إضافته لقاعدة البيانات لأنه سجل جديد
+                    db.DoctorDetails.Add(doctorDetails);
+
+                }
+
+                // 4. إذا وصل الكود هنا.. سيتم التعديل حتماً
+                doctorDetails.Specialization = textBoxsp.Text.Trim();
+                doctorDetails.ClinicNumber = textBoxclinic.Text.Trim();
+                doctorDetails.ConsultationFee = decimal.TryParse(textBoxfee.Text.Trim(), out decimal fee) ? fee : 0;
+
+                db.SaveChanges();
+                MessageBox.Show("تم تحديث بيانات العيادة والتخصص بنجاح! ✅");
+
+                ClearInputs();
+                RefreshUsersGrid();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("خطأ غير متوقع أثناء تعديل بيانات العيادة: " + ex.Message);
+            }
+        }
+
 
         // 6. [حذف حساب] - زر حذف الحساب نهائياً من قاعدة البيانات
         private void btnDeleteUser_Click_1(object sender, EventArgs e)
@@ -207,7 +351,7 @@ namespace FINAL1
                 int userId = (int)dgvUsers.CurrentRow.Cells["رقم_الحساب"].Value;
                 string username = dgvUsers.CurrentRow.Cells["اسم_المستخدم"].Value.ToString();
 
-                if (username.ToLower() == "admin")
+                if (userId == 10) // افتراضياً الحساب الرئيسي للأدمن هو UserID = 10 واسم المستخدم "admin"
                 {
                     MessageBox.Show("حماية للنظام: لا يمكن حذف الحساب الرئيسي للأدمن!");
                     return;
@@ -216,9 +360,14 @@ namespace FINAL1
                 DialogResult result = MessageBox.Show($"هل أنت متأكد من حذف الحساب ({username}) نهائياً؟", "تأكيد الحذف", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
                 if (result == DialogResult.Yes)
                 {
+                   // var userToDelete = db.DoctorDetails.FirstOrDefault(doc => doc.DoctorID == db.Employees.FirstOrDefault(emp => emp.UserID == userId).EmployeeID);
+
                     var userToDelete = db.Users.Find(userId);
                     if (userToDelete != null)
                     {
+                        // حذف بيانات الطبيب المرتبطة أولاً إذا كان موجوداً لمنع أخطاء المفتاح الأجنبي (Foreign Key)
+                        db.DoctorDetails.RemoveRange(db.DoctorDetails.Where(doc => doc.DoctorID == db.Employees.FirstOrDefault(emp => emp.UserID == userId).EmployeeID));
+                        db.Employees.RemoveRange(db.Employees.Where(emp => emp.UserID == userId));
                         db.Users.Remove(userToDelete);
                         db.SaveChanges();
 
@@ -268,6 +417,88 @@ namespace FINAL1
         {
 
         }
+
+        private void buttoninfo_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                // 1. التحقق من إدخال رقم المستخدم في مربع النص
+                if (string.IsNullOrWhiteSpace(txtUserID.Text))
+                {
+                    MessageBox.Show("يرجى إدخال رقم المستخدم (User ID) أولاً لاسترجاع بيانات الطبيب.", "تنبيه", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+
+                int inputUserID = int.Parse(txtUserID.Text);
+
+                using (var db = new HospitalDBEntities())   //
+                {
+                    // 2. عمل استعلام يدمج جدول الموظفين مع تفاصيل الطبيب بناءً على الـ UserID
+                    // قمنا باستخدام Include لجلب البيانات المرتبطة (Eager Loading) لضمان السرعة وكفاءة الكود
+                    var doctor = db.Employees
+                                   .Include("DoctorDetails")
+                                   .FirstOrDefault(emp => emp.UserID == inputUserID);
+
+                    if (doctor != null)
+                    {
+                        // 1. تجهيز السطر الأول (الاسم الكامل)
+                        string doctorName = $"{doctor.FirstName} {doctor.LastName}";
+                        string specialization = "";
+                        string clinicNumber = "";
+                        string consultationFee = "";
+
+                        // 2. استخراج بقية البيانات من جدول تفاصيل الأطباء
+                        if (doctor.DoctorDetails != null)
+                        {
+                            specialization = doctor.DoctorDetails.Specialization;
+                            clinicNumber = doctor.DoctorDetails.ClinicNumber.ToString();
+                            consultationFee = $"{doctor.DoctorDetails.ConsultationFee} د.أ";
+                        }
+                        else
+                        {
+                            specialization = "كادر إداري / موظف عام";
+                            clinicNumber = "-";
+                            consultationFee = "-";
+                        }
+
+                        // 3. دمج البيانات كلها في Label واحدة مع سطر جديد (\n) لكل معلومة
+                        lblDoctorName.Text = $"👨‍⚕️ اسم الطبيب المعالج: {doctorName}\n" +
+                                            $"🩺 التخصص الطبي: {specialization}\n" +
+                                            $"🚪 رقم العيادة / القسم: {clinicNumber}\n" +
+                                            $"💵 رسوم المعاينة: {consultationFee}";
+
+                        txtUserID.ForeColor = System.Drawing.Color.DarkBlue;
+                    }
+                    else
+                    {
+                        MessageBox.Show($"عذراً، لم يتم العثور على أي طبيب أو موظف مرتبط برقم المستخدم ({inputUserID}) في النظام.", "المستخدم غير موجود", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        ClearDoctorLabels();
+                    }
+
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"فشل نظام الاتصال بقاعدة البيانات أثناء جلب معلومات الطبيب: {ex.Message}", "خطأ تقني", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        // دالة مساعدة لتنظيف واجهة العرض عند الخطأ
+        private void ClearDoctorLabels()
+        {
+            // تفريغ كافة الأسطر داخل نفس الأداة عند حدوث خطأ أو عدم العثور على الطبيب
+            txtUserID.Text = "👨‍⚕️ اسم الطبيب المعالج: غير معروف\n" +
+                                "🩺 التخصص الطبي: -\n" +
+                                "🚪 رقم العيادة / القسم: -\n" +
+                                "💵 رسوم المعاينة: -";
+
+            txtUserID.ForeColor = System.Drawing.Color.Red;
+        }
+
+       
     }
+
 }
+
+
       

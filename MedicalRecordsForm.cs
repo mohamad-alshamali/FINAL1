@@ -3,6 +3,8 @@ using System.Data;
 using System.Linq;
 using System.Windows.Forms;
 using Hospital.Data;
+using System.Configuration;
+using System.Data.SqlClient;
 
 namespace FINAL1
 {
