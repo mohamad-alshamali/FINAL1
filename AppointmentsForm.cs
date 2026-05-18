@@ -9,7 +9,7 @@ namespace FINAL1
 {
     public partial class AppointmentsForm : Form
     {
-        private HospitalDBEntities db = new HospitalDBEntities();
+        private HospitalDBEntities db = Class1.GetContext();
 
         public AppointmentsForm()
         {

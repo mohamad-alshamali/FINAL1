@@ -91,7 +91,7 @@ namespace FINAL1
             }
             try
             {
-                using (var db = new HospitalDBEntities())
+                using (var db = Class1.GetContext())
                 {
                     // 1. جلب قائمة المرضى وتعبئة الـ ComboBox الخاص بهم (اسمه cmbPatients)
                     var patientsList = db.Patients
@@ -416,7 +416,7 @@ namespace FINAL1
                     }
 
                     // 🌟 الحفظ التلقائي المباشر باستخدام الـ ID المأخوذ من الـ ComboBox 🌟
-                    using (var db = new HospitalDBEntities())
+                    using (var db = Class1.GetContext())
                     {
                         MedicalRecords newRecord = new MedicalRecords();
 
@@ -501,7 +501,7 @@ namespace FINAL1
                     }
 
                     // 🌟 الحفظ التلقائي في السجلات الطبية باستخدام الـ ID المأخوذ من الـ ComboBox 🌟
-                    using (var db = new HospitalDBEntities())
+                    using (var db = Class1.GetContext())
                     {
                         MedicalRecords newRecord = new MedicalRecords();
 

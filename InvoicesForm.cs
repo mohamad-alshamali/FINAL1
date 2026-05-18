@@ -10,7 +10,7 @@ namespace FINAL1
 {
     public partial class InvoicesForm : Form
     {
-        private HospitalDBEntities db = new HospitalDBEntities();
+        private HospitalDBEntities db = Class1.GetContext();
 
         public InvoicesForm()
         {

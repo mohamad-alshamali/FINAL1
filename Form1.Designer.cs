@@ -37,6 +37,7 @@
             this.button2 = new System.Windows.Forms.Button();
             this.button1 = new System.Windows.Forms.Button();
             this.panel2 = new System.Windows.Forms.Panel();
+            this.progressBar1 = new System.Windows.Forms.ProgressBar();
             this.linkLabel3 = new System.Windows.Forms.LinkLabel();
             this.linkLabel2 = new System.Windows.Forms.LinkLabel();
             this.linkLabel1 = new System.Windows.Forms.LinkLabel();
@@ -61,15 +62,13 @@
             this.medicalRecordsToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.الادارةToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.employeeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.doctorsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.الفواتيرToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.لوحةالتحكمToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.ادارةالمرضىToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.المواعيدToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.السجلاتالطبيةToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.ادواتالذكاءالصناعيToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.progressBar1 = new System.Windows.Forms.ProgressBar();
+            this.settingsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.panelLogin.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.picUserProfile)).BeginInit();
             this.panel2.SuspendLayout();
@@ -177,6 +176,16 @@
             this.panel2.Name = "panel2";
             this.panel2.Size = new System.Drawing.Size(592, 426);
             this.panel2.TabIndex = 1;
+            // 
+            // progressBar1
+            // 
+            this.progressBar1.Location = new System.Drawing.Point(146, 202);
+            this.progressBar1.MarqueeAnimationSpeed = 20;
+            this.progressBar1.Name = "progressBar1";
+            this.progressBar1.Size = new System.Drawing.Size(100, 23);
+            this.progressBar1.Style = System.Windows.Forms.ProgressBarStyle.Marquee;
+            this.progressBar1.TabIndex = 9;
+            this.progressBar1.Visible = false;
             // 
             // linkLabel3
             // 
@@ -349,7 +358,8 @@
             this.ادارةالمرضىToolStripMenuItem,
             this.المواعيدToolStripMenuItem,
             this.السجلاتالطبيةToolStripMenuItem,
-            this.ادواتالذكاءالصناعيToolStripMenuItem});
+            this.ادواتالذكاءالصناعيToolStripMenuItem,
+            this.settingsToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
             this.menuStrip1.Size = new System.Drawing.Size(776, 24);
@@ -358,25 +368,10 @@
             // 
             // الادارةToolStripMenuItem
             // 
-            this.الادارةToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.employeeToolStripMenuItem,
-            this.doctorsToolStripMenuItem});
             this.الادارةToolStripMenuItem.Name = "الادارةToolStripMenuItem";
             this.الادارةToolStripMenuItem.Size = new System.Drawing.Size(48, 20);
             this.الادارةToolStripMenuItem.Text = "الادارة";
             this.الادارةToolStripMenuItem.Click += new System.EventHandler(this.manageUsersToolStripMenuItem_Click);
-            // 
-            // employeeToolStripMenuItem
-            // 
-            this.employeeToolStripMenuItem.Name = "employeeToolStripMenuItem";
-            this.employeeToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
-            this.employeeToolStripMenuItem.Text = "employee";
-            // 
-            // doctorsToolStripMenuItem
-            // 
-            this.doctorsToolStripMenuItem.Name = "doctorsToolStripMenuItem";
-            this.doctorsToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
-            this.doctorsToolStripMenuItem.Text = "doctors";
             // 
             // الفواتيرToolStripMenuItem
             // 
@@ -420,15 +415,12 @@
             this.ادواتالذكاءالصناعيToolStripMenuItem.Text = "ادوات الذكاء الصناعي";
             this.ادواتالذكاءالصناعيToolStripMenuItem.Click += new System.EventHandler(this.intelgentFormToolStripMenuItem_Click);
             // 
-            // progressBar1
+            // settingsToolStripMenuItem
             // 
-            this.progressBar1.Location = new System.Drawing.Point(146, 202);
-            this.progressBar1.MarqueeAnimationSpeed = 20;
-            this.progressBar1.Name = "progressBar1";
-            this.progressBar1.Size = new System.Drawing.Size(100, 23);
-            this.progressBar1.Style = System.Windows.Forms.ProgressBarStyle.Marquee;
-            this.progressBar1.TabIndex = 9;
-            this.progressBar1.Visible = false;
+            this.settingsToolStripMenuItem.Name = "settingsToolStripMenuItem";
+            this.settingsToolStripMenuItem.Size = new System.Drawing.Size(101, 20);
+            this.settingsToolStripMenuItem.Text = "اعدادات الاتصال ";
+            this.settingsToolStripMenuItem.Click += new System.EventHandler(this.settingsToolStripMenuItem_Click);
             // 
             // Form1
             // 
@@ -498,9 +490,8 @@
         private System.Windows.Forms.ToolStripMenuItem السجلاتالطبيةToolStripMenuItem;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.ToolStripMenuItem ادواتالذكاءالصناعيToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem employeeToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem doctorsToolStripMenuItem;
         private System.Windows.Forms.ProgressBar progressBar1;
+        private System.Windows.Forms.ToolStripMenuItem settingsToolStripMenuItem;
     }
 }
 

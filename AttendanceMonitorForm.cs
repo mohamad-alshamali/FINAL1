@@ -16,7 +16,7 @@ namespace FINAL1
 {
     public partial class AttendanceMonitorForm : Form
     {
-        private HospitalDBEntities db = new HospitalDBEntities();
+        private HospitalDBEntities db = Class1.GetContext();
         public AttendanceMonitorForm()
         {
             InitializeComponent();

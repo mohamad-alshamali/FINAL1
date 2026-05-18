@@ -9,7 +9,7 @@ namespace FINAL1
 {
     public partial class ManageUsersForm : Form
     {
-        private HospitalDBEntities db = new HospitalDBEntities();
+        private HospitalDBEntities db = Class1.GetContext();
 
         public ManageUsersForm()
         {
@@ -431,7 +431,7 @@ private void SetTextBoxPlaceholder(TextBox textBox, string placeholderText)
 
                 int inputUserID = int.Parse(txtUserID.Text);
 
-                using (var db = new HospitalDBEntities())   //
+                using (var db = Class1.GetContext())   //
                 {
                     // 2. عمل استعلام يدمج جدول الموظفين مع تفاصيل الطبيب بناءً على الـ UserID
                     // قمنا باستخدام Include لجلب البيانات المرتبطة (Eager Loading) لضمان السرعة وكفاءة الكود

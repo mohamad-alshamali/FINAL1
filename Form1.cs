@@ -12,7 +12,7 @@ namespace FINAL1
 {
     public partial class Form1 : Form
     {
-        private HospitalDBEntities db = new HospitalDBEntities();
+        private HospitalDBEntities db = Class1.GetContext();
         private string currentUserRole = "";
         private static ColorDialog colorChooser = new ColorDialog();
 
@@ -44,6 +44,8 @@ namespace FINAL1
 
         private void Form1_Load(object sender, EventArgs e)
         {
+            // 👇⬇🔻فعله في حال فشل الاتصال للاتصال بالـ ip المحلي
+           // Hospital.Data.Properties.Settings.Default.Reset();
             treeView1.Visible = false;
 
             menuStrip1.Visible = true;
@@ -52,7 +54,7 @@ namespace FINAL1
             {
                 item.Enabled = false;
             }
-
+            settingsToolStripMenuItem.Enabled = true;
             panelLogin.Visible = true;
             panelLogin.BringToFront();
 
@@ -90,10 +92,7 @@ namespace FINAL1
         // زر تسجيل الدخول والخروج
         private void btnLogin_Click_1(object sender, EventArgs e)
         {
-            if (!isLoggedIn)
-            {
-                progressBar1.Visible = true;
-            }
+           
 
 
                 // تسجيل خروج
@@ -146,7 +145,7 @@ namespace FINAL1
         // معالجة تسجيل الدخول
         public void ProcessLogin(string username, string password)
         {
-            
+            progressBar1.Visible = true;
             try
             {
                 var loggedInUser = db.Users
@@ -218,13 +217,29 @@ namespace FINAL1
                     txtPassword.Enabled = true;
                 }
             }
+            
             catch (Exception ex)
             {
-                MessageBox.Show("خطأ : " + ex.Message);
+                // 1. صمام الأمان: إلغاء خاصية التخطي تلقائياً لكي تعود الشاشة للعمل عند إعادة التشغيل
+                Hospital.Data.Properties.Settings.Default.SkipIPSettings = false;
+                Hospital.Data.Properties.Settings.Default.Save(); // تثبيت الإلغاء على القرص
 
+                // 2. تنبيه المستخدم بفشل الاتصال بالخلفية بسبب الـ IP الخاطئ
+                MessageBox.Show("فشل الاتصال بقاعدة البيانات! قد يكون عنوان السيرفر (IP) الحالي خاطئاً.\n" +
+                                "ستفتح شاشة الإعدادات تلقائياً الآن لتصحيح المسار.\n\n" +
+                                "تفاصيل الخطأ الفني: " + ex.Message,
+                                "تنبيه: خطأ في الاتصال", MessageBoxButtons.OK, MessageBoxIcon.Error);
+
+                // 3. الإضافة الحاسمة: إنشاء نسخة من شاشة الإعدادات وفتحها قسرياً في المقدمة وتفعيلها كـ نافذة نشطة
+                // تم استخدام اسم الكلاس المباشر والمحمّل بمساره (FINAL1.SettingsForm) لمنع أخطاء الـ Namespace
+                FINAL1.settings setForm = new FINAL1.settings();
+                setForm.ShowDialog(); // ShowDialog تجعلها نشطة وفي المقدمة ولا يمكن للمستخدم تخطيها إلا بعد التعديل
+
+                // 4. إعادة تفعيل حقول الكتابة في شاشة الدخول ليتمكن المستخدم من المحاولة مجدداً بعد التصحيح وإعادة التشغيل
                 txtUsername.Enabled = true;
                 txtPassword.Enabled = true;
             }
+
         }
 
         // بناء الشجرة
@@ -379,7 +394,11 @@ namespace FINAL1
         {
             new intelgentForm().Show();
         }
+        private void settingsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            new settings().ShowDialog();
+        }
 
-
+       
     }
 }
